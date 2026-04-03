@@ -7,12 +7,14 @@
 
 void update(Simulation *sim) {
   Agent *agent;
-  Agent *dead_agent;
+  Agent *next_agent;
 
   rule_M(sim);
   rule_G(sim, 1);
 
-  for (agent=sim->agents; agent!=NULL;) {
+  for (agent=sim->agents; agent!=NULL; agent=next_agent) {
+    next_agent = agent->next;
+
     agent->sugar -= agent->metabolism;
     if (agent->sugar < 0) {
       if (agent->prev != NULL) {
@@ -26,16 +28,11 @@ void update(Simulation *sim) {
         sim->agents = agent->next;
       }
 
-      dead_agent = agent;
-      agent = agent->next;
+      sim->agents_map[agent->y][agent->x] = NULL;
 
-      dead_agent->next = sim->unused_agents;
-      sim->unused_agents = dead_agent;
-
-      sim->agents_map[dead_agent->y][dead_agent->x] = NULL;
+      agent->next = sim->unused_agents;
+      sim->unused_agents = agent;
     }
-
-    agent=agent->next;
   }
 }
 
