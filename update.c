@@ -60,7 +60,7 @@ void rule_M(Simulation *sim) {
     for (int i=-agent->vision; i<=agent->vision; i++) {
       x_ = (x+i+sim->width)%sim->width;
       s = sim->sugar_lvl[y][x_];
-      if (sim->agents_map[y][x_]==NULL && s>=s_max && dist>abs(i)) {
+      if (sim->agents_map[y][x_]==NULL && s>s_max || (s==s_max && dist>abs(i))) {
         s_max = s;
         dist = abs(i);
         ny = y;
@@ -71,7 +71,7 @@ void rule_M(Simulation *sim) {
     for (int i=-agent->vision; i<=agent->vision; i++) {
       y_ = (y+i+sim->height)%sim->height;
       s = sim->sugar_lvl[y_][x];
-      if (sim->agents_map[y_][x]==NULL && s>=s_max && dist>abs(i)) {
+      if (sim->agents_map[y_][x]==NULL && s>s_max || (s==s_max && dist>abs(i))) {
         s_max = s;
         dist = abs(i);
         ny = y_;
