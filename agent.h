@@ -6,7 +6,7 @@ static int MIN_METABOLISM = 1;
 static int MAX_METABOLISM = 4;
 
 static int MIN_VISION = 1;
-static int MAX_VISION = 10;
+static int MAX_VISION = 6;
 
 static int MIN_INIT_SUGAR = 50;
 static int MAX_INIT_SUGAR = 100;

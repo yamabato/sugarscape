@@ -70,10 +70,10 @@ int main(void) {
 
   int n;
   show_agents(&sim);
-  for (int i=0; i<5000; i++) {
+  for (int i=0; i<1000; i++) {
     update(&sim);
 
-    if (i%500 == 0) {
+    if (i%100== 0) {
       n = 0;
       for (Agent *agent=sim.agents; agent!=NULL; agent=agent->next) {
         n++;

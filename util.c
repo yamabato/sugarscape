@@ -3,7 +3,7 @@
 #include "util.h"
 
 int uniform_dist_rand(int a, int b) {
-  return rand()%(b-a) + a;
+  return rand()%(b-a+1) + a;
 }
 
 int max(int a, int b) {

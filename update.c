@@ -216,6 +216,7 @@ void rule_S(Simulation *sim) {
       y_ = (agent->y+SCAN_DIRECTIONS[dir_n_arr[i]][0]+h)%h;
       neighbor = sim->agents_map[y_][x_];
       if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar) { continue; }
+      if (agent->sex == neighbor->sex) { continue; }
 
       if (sim->unused_agents == NULL) {
         printf("no unused agents\n");
