@@ -8,9 +8,9 @@
 #include "setting.h"
 #include "show.h"
 #include "update.h"
+#include "initialize.h"
 
 void initialize(Simulation *sim) {
-  int x_, y_;
   Agent *agent;
 
   sim->time = 0;
@@ -43,30 +43,9 @@ void initialize(Simulation *sim) {
   }
 
   for (int i=0; i<INIT_AGENTS; i++) {
-    do {
-      x_ = uniform_dist_rand(0, sim->width-1);
-      y_ = uniform_dist_rand(0, sim->height-1);
-    } while (sim->agents_map[y_][x_] != NULL);
-
-    // 左下に固めて配置
-    /*
-    x_ = i % 20;
-    y_ = i/20+30;
-    */
-
     agent = sim->unused_agents;
-    sim->agents_map[y_][x_] = agent;
     sim->unused_agents = agent->next;
-    agent->next = sim->agents;
-    if (sim->agents != NULL) { sim->agents->prev = agent; }
-    agent->prev = NULL;
-    sim->agents = agent;
-
-    agent->x = x_;
-    agent->y = y_;
-    agent->metabolism = uniform_dist_rand(MIN_METABOLISM, MAX_METABOLISM);
-    agent->vision = uniform_dist_rand(MIN_VISION, MAX_VISION);
-    agent->sugar = uniform_dist_rand(MIN_INIT_SUGAR, MAX_INIT_SUGAR);
+    initialize_agent(sim, agent, -1, -1, -1, -1, -1);
   }
 }
 
@@ -90,7 +69,7 @@ int main(void) {
   show_sugarscape(&sim);
 
   show_agents(&sim);
-  for (int i=0; i<150; i++) {
+  for (int i=0; i<1000; i++) {
     update(&sim);
 
     if (i%10 == 0) {

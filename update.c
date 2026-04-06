@@ -5,6 +5,7 @@
 #include "sugar.h"
 #include "util.h"
 #include "update.h"
+#include "initialize.h"
 
 void update(Simulation *sim) {
   Agent *agent;
@@ -20,20 +21,26 @@ void update(Simulation *sim) {
 
   sim->time++;
 
+  /*
   if (sim->time <50) { sim->pollute = false; }
   else { sim->pollute = true; }
+  */
 
   rule_M(sim, rule_m_alpha);
   rule_G(sim, rule_g_alpha);
 
+  /*
   if (sim->time >= 100) {
     rule_D(sim, rule_d_alpha);
   }
-  // rule_S(sim, 5, 25, 50);
+  */
+  // rule_S_abg(sim, 5, 25, 50);
+  rule_S(sim);
 
   for (agent=sim->agents; agent!=NULL; agent=next_agent) {
     x = agent->x;
     y = agent->y;
+    agent->age++;
     next_agent = agent->next;
 
     consumed_sugar = min(agent->metabolism, agent->sugar);
@@ -42,7 +49,7 @@ void update(Simulation *sim) {
     }
 
     agent->sugar -= agent->metabolism;
-    if (agent->sugar < 0) {
+    if (agent->sugar<0 || agent->age>=agent->lifespan) {
       if (agent->prev != NULL) {
         agent->prev->next = agent->next;
       }
@@ -101,7 +108,7 @@ void rule_D(Simulation *sim, int period) {
   }
 }
 
-void rule_S(Simulation *sim, int amount, int interval, int period) {
+void rule_S_abg(Simulation *sim, int amount, int interval, int period) {
   // season: 0->上がsummer
   int season = ((sim->time-1)/period)%2;
   for (int y=0; y<sim->height; y++) {
@@ -173,5 +180,83 @@ void rule_M(Simulation *sim, float alpha) {
     }
     agent->sugar += collected_sugar;
     sim->sugar_lvl[ny][nx] = 0;
+  }
+}
+
+void rule_S(Simulation *sim) {
+  int dir_n_arr[4] = {0, 1, 2, 3};
+  Agent *neighbor;
+  Agent *child;
+  int vision, metabolism;
+  int empty_sites[6];
+  int empty_site_n;
+  int x_, y_;
+  int child_x, child_y;
+
+  int w, h;
+  w = sim->width;
+  h = sim->height;
+
+  for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
+    if (agent->age>=agent->start_fertile_age && agent->age<=agent->end_fertile_age) { agent->is_fertile = true; }
+    else { agent->is_fertile = false; }
+  }
+
+  for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
+    if (!agent->is_fertile) { continue; }
+    // 近傍のエージェントをランダムに選ぶ
+    // 生殖可能なら，子エージェントを配置
+
+    shuffle(dir_n_arr, 4);
+    for (int i=0; i<4; i++) {
+      if (agent->sugar < agent->endowment_sugar/2) { break; }
+      x_ = (agent->x+SCAN_DIRECTIONS[dir_n_arr[i]][1]+w)%w;
+      y_ = (agent->y+SCAN_DIRECTIONS[dir_n_arr[i]][0]+h)%h;
+      neighbor = sim->agents_map[y_][x_];
+      if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar/2) { continue; }
+
+      if (sim->unused_agents == NULL) {
+        printf("no unused agents\n");
+        return;
+      }
+
+      // 空き地を探す
+      empty_site_n = 0;
+      for (int j=0; j<4; j++) {
+        x_ = (agent->x+SCAN_DIRECTIONS[j][1]+w)%w;
+        y_ = (agent->y+SCAN_DIRECTIONS[j][0]+h)%h;
+        if (sim->agents_map[y_][x_] == NULL) {
+          empty_sites[empty_site_n++] = x_+y_*w;
+        }
+
+        x_ = (neighbor->x+SCAN_DIRECTIONS[j][1]+w)%w;
+        y_ = (neighbor->y+SCAN_DIRECTIONS[j][0]+h)%h;
+        if (sim->agents_map[y_][x_] == NULL) {
+          empty_sites[empty_site_n++] = x_+y_*w;
+        }
+      }
+
+      if (empty_site_n == 0) { continue; }
+
+      child = sim->unused_agents;
+      sim->unused_agents = child->next;
+      if (sim->unused_agents != NULL) {
+        sim->unused_agents->prev = NULL;
+      }
+
+      child->next = sim->agents;
+      sim->agents->prev = child;
+      sim->agents = child;
+
+      agent->sugar -= agent->endowment_sugar/2;
+      neighbor->sugar -= neighbor->endowment_sugar/2;
+      vision = rand()<0.5 ? agent->vision : neighbor->vision;
+      metabolism = rand()<0.5 ? agent->metabolism : neighbor->metabolism;
+
+      shuffle(empty_sites, empty_site_n);
+      child_x = empty_sites[0]%w;
+      child_y = empty_sites[0]/w;
+      initialize_agent(sim, child, child_x, child_y, vision, metabolism, agent->endowment_sugar/2+neighbor->endowment_sugar/2);
+    }
   }
 }

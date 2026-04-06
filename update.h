@@ -13,6 +13,7 @@ void update(Simulation *);
 
 void rule_G(Simulation *, int);
 void rule_D(Simulation *, int);
-void rule_S(Simulation *, int, int, int);
+void rule_S_abg(Simulation *, int, int, int);
 
 void rule_M(Simulation *, float);
+void rule_S(Simulation *);
