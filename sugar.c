@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "agent.h"
 #include "sugar.h"
@@ -16,10 +17,12 @@ void initialize(Simulation *sim) {
 
   sim->sugar_lvl = (int **)malloc(sizeof(int *)*sim->height);
   sim->sugar_cap = (int **)malloc(sizeof(int *)*sim->height);
+  sim->pollution_lvl = (float **)malloc(sizeof(float *)*sim->height);
   sim->agents_map = (Agent ***)malloc(sizeof(int *)*sim->height);
   for (int i=0; i<HEIGHT; i++) {
     sim->sugar_lvl[i] = (int *)malloc(sizeof(int)*sim->width);
     sim->sugar_cap[i] = (int *)malloc(sizeof(int)*sim->width);
+    sim->pollution_lvl[i] = (float *)calloc(sim->width, sizeof(float));
     sim->agents_map[i] = (Agent **)calloc(sim->width, sizeof(Agent *));
   }
 
@@ -78,6 +81,8 @@ int main(void) {
   sim.unused_agents = NULL;
   sim.agents_map = NULL;
 
+  sim.pollute = false;
+
   srand(123);
 
   initialize(&sim);
@@ -85,13 +90,14 @@ int main(void) {
   show_sugarscape(&sim);
 
   show_agents(&sim);
-  for (int i=0; i<100; i++) {
+  for (int i=0; i<150; i++) {
     update(&sim);
 
-    if (i%5 == 0) {
+    if (i%10 == 0) {
       printf("\n");
       printf("step: %d\n", i+1);
       show_agents(&sim);
+      // show_pollution(&sim);
     }
   }
 

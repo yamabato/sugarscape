@@ -12,6 +12,7 @@ static int SCAN_DIRECTIONS[4][2] = {
 void update(Simulation *);
 
 void rule_G(Simulation *, int);
+void rule_D(Simulation *, int);
 void rule_S(Simulation *, int, int, int);
 
-void rule_M(Simulation *);
+void rule_M(Simulation *, float);

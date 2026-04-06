@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "agent.h"
 
 static int WIDTH = 50;
@@ -14,8 +16,11 @@ typedef struct {
   int width;
   int **sugar_lvl;
   int **sugar_cap;
+  float **pollution_lvl;
   Agent *agent_arr;
   Agent *agents;
   Agent *unused_agents;
   Agent ***agents_map;
+
+  bool pollute;
 } Simulation;

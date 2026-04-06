@@ -21,6 +21,17 @@ void show_sugarscape(Simulation *sim) {
 
 }
 
+void show_pollution(Simulation *sim) {
+  float lvl;
+  for (int y=0; y<sim->height; y++) {
+    for (int x=0; x<sim->width; x++) {
+      lvl = sim->pollution_lvl[y][x];
+      printf("%.2f ", lvl);
+    }
+    printf("\n");
+  }
+}
+
 void show_agents(Simulation *sim) {
   for (int y=0; y<sim->height; y++) {
     for (int x=0; x<sim->width; x++) {
