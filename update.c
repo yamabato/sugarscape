@@ -51,31 +51,28 @@ void rule_M(Simulation *sim) {
   int y_, x_;
   int ny, nx;
 
+  int directions_n_arr[4] = {0, 1, 2, 3};
+
   for (agent=sim->agents; agent!=NULL; agent=agent->next) {
     s_max = INT_MIN;
     dist = INT_MAX;
     x = agent->x;
     y = agent->y;
 
-    for (int i=-agent->vision; i<=agent->vision; i++) {
-      x_ = (x+i+sim->width)%sim->width;
-      s = sim->sugar_lvl[y][x_];
-      if (sim->agents_map[y][x_]==NULL && s>s_max || (s==s_max && dist>abs(i))) {
-        s_max = s;
-        dist = abs(i);
-        ny = y;
-        nx = x_;
-      }
-    }
+    shuffle(directions_n_arr, 4);
 
-    for (int i=-agent->vision; i<=agent->vision; i++) {
-      y_ = (y+i+sim->height)%sim->height;
-      s = sim->sugar_lvl[y_][x];
-      if (sim->agents_map[y_][x]==NULL && s>s_max || (s==s_max && dist>abs(i))) {
-        s_max = s;
-        dist = abs(i);
-        ny = y_;
-        nx = x;
+    for (int i=0; i<4; i++) {
+      for (int d=0; d<=agent->vision; d++) {
+        x_ = (x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0]+sim->width)%sim->width;
+        y_ = (y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1]+sim->height)%sim->height;
+        s = sim->sugar_lvl[y_][x_];
+
+        if (sim->agents_map[y_][x_]== NULL && (s>s_max || (s==s_max && dist>d))) {
+          s_max = s;
+          dist = d;
+          ny = y_;
+          nx = x_;
+        }
       }
     }
 
