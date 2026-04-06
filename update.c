@@ -140,6 +140,8 @@ void rule_M(Simulation *sim, float alpha) {
     dist = INT_MAX;
     x = agent->x;
     y = agent->y;
+    nx = x;
+    ny = y;
 
     shuffle(directions_n_arr, 4);
 
