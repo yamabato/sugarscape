@@ -50,6 +50,7 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   } else {
     agent->sugar = endowment_sugar;
   }
+  agent->endowment_sugar = agent->sugar;
 
   agent->age = 0;
   agent->is_fertile = false;
