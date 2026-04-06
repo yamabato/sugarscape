@@ -23,8 +23,8 @@ void initialize(Simulation *sim) {
 
   for (int i=0; i<sim->height; i++) {
     for (int j=0; j<sim->width; j++) {
-      sim->sugar_lvl[i][j] = SUGAR_CAP_SETTING1[i][j];
-      sim->sugar_cap[i][j] = SUGAR_CAP_SETTING1[i][j];
+      sim->sugar_lvl[i][j] = SUGAR_CAP_SETTING4[i][j];
+      sim->sugar_cap[i][j] = SUGAR_CAP_SETTING4[i][j];
     }
   }
 
@@ -38,10 +38,16 @@ void initialize(Simulation *sim) {
   }
 
   for (int i=0; i<INIT_AGENTS; i++) {
+    /*
     do {
       x_ = uniform_dist_rand(0, sim->width-1);
       y_ = uniform_dist_rand(0, sim->height-1);
     } while (sim->agents_map[y_][x_] != NULL);
+    */
+
+    // 左下に固めて配置
+    x_ = i % 20;
+    y_ = i/20+30;
 
     agent = sim->unused_agents;
     sim->agents_map[y_][x_] = agent;
@@ -74,12 +80,18 @@ int main(void) {
 
   initialize(&sim);
 
-  for (int i=0; i<100; i++) {
-    update(&sim);
-  }
-
   show_sugarscape(&sim);
+
   show_agents(&sim);
+  for (int i=0; i<30; i++) {
+    update(&sim);
+
+    if (i%1 == 0) {
+      printf("\n");
+      printf("step: %d\n", i+1);
+      show_agents(&sim);
+    }
+  }
 
   return 0;
 }
