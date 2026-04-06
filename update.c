@@ -9,8 +9,11 @@ void update(Simulation *sim) {
   Agent *agent;
   Agent *next_agent;
 
+  sim->time++;
+
   rule_M(sim);
-  rule_G(sim, 1);
+  // rule_G(sim, 1);
+  rule_S(sim, 5, 25, 50);
 
   for (agent=sim->agents; agent!=NULL; agent=next_agent) {
     next_agent = agent->next;
@@ -40,6 +43,20 @@ void rule_G(Simulation *sim, int amount) {
   for (int y=0; y<sim->height; y++) {
     for (int x=0; x<sim->width; x++) {
       sim->sugar_lvl[y][x] = min(sim->sugar_lvl[y][x]+amount, sim->sugar_cap[y][x]);
+    }
+  }
+}
+
+void rule_S(Simulation *sim, int amount, int interval, int period) {
+  // season: 0->上がsummer
+  int season = ((sim->time-1)/period)%2;
+  for (int y=0; y<sim->height; y++) {
+    for (int x=0; x<sim->width; x++) {
+      if ((y<sim->height/2 && season==0) || (y>=sim->height/2 && season==1)) { // summer
+        sim->sugar_lvl[y][x] = min(sim->sugar_lvl[y][x]+amount, sim->sugar_cap[y][x]);
+      } else if ((sim->time-1)%interval == 0) { // winter
+        sim->sugar_lvl[y][x] = min(sim->sugar_lvl[y][x]+amount, sim->sugar_cap[y][x]);
+      }
     }
   }
 }

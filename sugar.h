@@ -9,6 +9,7 @@ static int MAX_AGENTS = 1000;
 static int INIT_AGENTS = 400;
 
 typedef struct {
+  int time;
   int height;
   int width;
   int **sugar_lvl;

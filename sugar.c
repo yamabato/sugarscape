@@ -12,6 +12,8 @@ void initialize(Simulation *sim) {
   int x_, y_;
   Agent *agent;
 
+  sim->time = 0;
+
   sim->sugar_lvl = (int **)malloc(sizeof(int *)*sim->height);
   sim->sugar_cap = (int **)malloc(sizeof(int *)*sim->height);
   sim->agents_map = (Agent ***)malloc(sizeof(int *)*sim->height);
@@ -38,16 +40,16 @@ void initialize(Simulation *sim) {
   }
 
   for (int i=0; i<INIT_AGENTS; i++) {
-    /*
     do {
       x_ = uniform_dist_rand(0, sim->width-1);
       y_ = uniform_dist_rand(0, sim->height-1);
     } while (sim->agents_map[y_][x_] != NULL);
-    */
 
     // 左下に固めて配置
+    /*
     x_ = i % 20;
     y_ = i/20+30;
+    */
 
     agent = sim->unused_agents;
     sim->agents_map[y_][x_] = agent;
@@ -83,10 +85,10 @@ int main(void) {
   show_sugarscape(&sim);
 
   show_agents(&sim);
-  for (int i=0; i<30; i++) {
+  for (int i=0; i<100; i++) {
     update(&sim);
 
-    if (i%1 == 0) {
+    if (i%5 == 0) {
       printf("\n");
       printf("step: %d\n", i+1);
       show_agents(&sim);
