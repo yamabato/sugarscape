@@ -68,10 +68,18 @@ int main(void) {
 
   show_sugarscape(&sim);
 
+  int n;
   show_agents(&sim);
-  for (int i=0; i<1000; i++) {
+  for (int i=0; i<100; i++) {
     update(&sim);
 
+    n = 0;
+    for (Agent *agent=sim.agents; agent!=NULL; agent=agent->next) {
+      n++;
+    }
+    printf("%03d\n", n);
+    continue;
+  
     if (i%10 == 0) {
       printf("\n");
       printf("step: %d\n", i+1);
@@ -79,6 +87,7 @@ int main(void) {
       // show_pollution(&sim);
     }
   }
+      show_agents(&sim);
 
   return 0;
 }

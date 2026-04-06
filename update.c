@@ -204,16 +204,16 @@ void rule_S(Simulation *sim) {
 
   for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
     if (!agent->is_fertile) { continue; }
+    if (agent->sugar < agent->endowment_sugar) { continue; }
     // 近傍のエージェントをランダムに選ぶ
     // 生殖可能なら，子エージェントを配置
 
     shuffle(dir_n_arr, 4);
     for (int i=0; i<4; i++) {
-      if (agent->sugar < agent->endowment_sugar/2) { break; }
       x_ = (agent->x+SCAN_DIRECTIONS[dir_n_arr[i]][1]+w)%w;
       y_ = (agent->y+SCAN_DIRECTIONS[dir_n_arr[i]][0]+h)%h;
       neighbor = sim->agents_map[y_][x_];
-      if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar/2) { continue; }
+      if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar) { continue; }
 
       if (sim->unused_agents == NULL) {
         printf("no unused agents\n");
@@ -243,10 +243,6 @@ void rule_S(Simulation *sim) {
       if (sim->unused_agents != NULL) {
         sim->unused_agents->prev = NULL;
       }
-
-      child->next = sim->agents;
-      sim->agents->prev = child;
-      sim->agents = child;
 
       agent->sugar -= agent->endowment_sugar/2;
       neighbor->sugar -= neighbor->endowment_sugar/2;
