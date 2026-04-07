@@ -22,7 +22,7 @@ void shuffle(int *arr, int n) {
   int pos;
   int tmp;
   for (int i=0; i<n; i++) {
-    pos = uniform_dist_rand(i, n);
+    pos = uniform_dist_rand(i, n-1);
     tmp = arr[i];
     arr[i] = arr[pos];
     arr[pos] = tmp;

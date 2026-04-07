@@ -5,7 +5,7 @@
 #include "util.h"
 #include "sugar.h"
 
-void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, int metabolism, int endowment_sugar) {
+void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, int sugar_metabolism, int spice_metabolism, int endowment_sugar, int endowment_spice) {
   int x_, y_;
 
   if (x==-1 || y==-1) {
@@ -33,10 +33,16 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   agent->x = x_;
   agent->y = y_;
 
-  if (metabolism == -1) {
-    agent->metabolism = uniform_dist_rand(MIN_METABOLISM, MAX_METABOLISM);
+  if (sugar_metabolism == -1) {
+    agent->sugar_metabolism = uniform_dist_rand(MIN_SUGAR_METABOLISM, MAX_SUGAR_METABOLISM);
   } else {
-    agent->metabolism = metabolism;
+    agent->sugar_metabolism = sugar_metabolism;
+  }
+
+  if (spice_metabolism == -1) {
+    agent->spice_metabolism = uniform_dist_rand(MIN_SPICE_METABOLISM, MAX_SPICE_METABOLISM);
+  } else {
+    agent->spice_metabolism = spice_metabolism;
   }
 
   if (vision == -1) {
@@ -50,7 +56,14 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   } else {
     agent->sugar = endowment_sugar;
   }
-  agent->endowment_sugar = agent->sugar;
+  agent->endowment_spice = agent->spice;
+
+  if (endowment_spice == -1) {
+    agent->spice = uniform_dist_rand(MIN_INIT_SPICE, MAX_INIT_SPICE);
+  } else {
+    agent->spice = endowment_spice;
+  }
+  agent->endowment_spice = agent->spice;
 
   agent->age = 0;
   agent->is_fertile = false;

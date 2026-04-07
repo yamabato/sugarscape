@@ -1,9 +1,9 @@
 CC     = clang
 CFLAGS = -Wall -g
-LIBS   =
+LIBS   = -lm
 
 TARGET = sugar
-OBJS   = sugar.o show.o util.o update.o initialize.o
+OBJS   = sugar.o show.o util.o update.o initialize.o agent.o
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
@@ -16,6 +16,7 @@ util.o: util.c util.h
 show.o: show.c show.h sugar.h
 update.o: update.c update.h sugar.h util.h
 initialize.o: initialize.c initialize.h agent.h sugar.h
+agent.o: agent.c agent.h
 
 run: $(TARGET)
 	./$(TARGET)

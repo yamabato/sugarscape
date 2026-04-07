@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <math.h>
 
 #include "sugar.h"
 #include "util.h"
 #include "update.h"
 #include "initialize.h"
+#include "agent.h"
 
 void update(Simulation *sim) {
   Agent *agent;
   Agent *next_agent;
   int x, y;
-  int consumed_sugar;
+  int consumed_sugar, consumed_spice;
 
   int rule_g_alpha = 1; // 砂糖の復元量
   int rule_d_alpha = 1; // 汚染物質拡散速度
@@ -43,13 +45,16 @@ void update(Simulation *sim) {
     agent->age++;
     next_agent = agent->next;
 
-    consumed_sugar = min(agent->metabolism, agent->sugar);
+    consumed_sugar = min(agent->sugar_metabolism, agent->sugar);
+    consumed_spice = min(agent->sugar_metabolism, agent->spice);
     if (sim->pollute) {
       sim->pollution_lvl[y][x] += consumed_sugar*rule_m_beta;
+      sim->pollution_lvl[y][x] += consumed_spice*rule_m_beta;
     }
 
-    agent->sugar -= agent->metabolism;
-    if (agent->sugar<0 || agent->age>=agent->lifespan) {
+    agent->sugar -= agent->sugar_metabolism;
+    agent->spice -= agent->spice_metabolism;
+    if (agent->sugar<0 || agent->spice<0 || agent->age>=agent->lifespan) {
       if (agent->prev != NULL) {
         agent->prev->next = agent->next;
       }
@@ -73,6 +78,7 @@ void rule_G(Simulation *sim, int amount) {
   for (int y=0; y<sim->height; y++) {
     for (int x=0; x<sim->width; x++) {
       sim->sugar_lvl[y][x] = min(sim->sugar_lvl[y][x]+amount, sim->sugar_cap[y][x]);
+      sim->spice_lvl[y][x] = min(sim->spice_lvl[y][x]+amount, sim->spice_cap[y][x]);
     }
   }
 }
@@ -122,6 +128,72 @@ void rule_S_abg(Simulation *sim, int amount, int interval, int period) {
   }
 }
 
+// 砂糖 + スパイス
+void rule_M(Simulation *sim, float alpha) {
+  Agent *agent;
+  int dist;
+  int sugar, spice;
+  float utility, utility_max;
+  int x, y;
+  int y_, x_;
+  int ny, nx;
+  int collected_sugar, collected_spice;
+
+  int directions_n_arr[4] = {0, 1, 2, 3};
+
+  for (agent=sim->agents; agent!=NULL; agent=agent->next) {
+    utility_max = 0;
+    dist = INT_MAX;
+    x = agent->x;
+    y = agent->y;
+    nx = x;
+    ny = y;
+
+    shuffle(directions_n_arr, 4);
+
+    for (int i=0; i<4; i++) {
+      for (int d=0; d<=agent->vision; d++) {
+        // x_ = (x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0]+sim->width)%sim->width;
+        // y_ = (y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1]+sim->height)%sim->height;
+        x_ = x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0];
+        y_ = y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1];
+        if (x_ < 0) { x_ = 0; }
+        if (x_ >= sim->width) { x_ = sim->width-1; }
+        if (y_ < 0) { y_ = 0; }
+        if (y_ >= sim->height) { y_ = sim->height-1; }
+
+        sugar = sim->sugar_lvl[y_][x_];
+        spice = sim->spice_lvl[y_][x_];
+        utility = agent_utility_function(sugar, spice, agent->sugar_metabolism, agent->spice_metabolism);
+
+        if (sim->agents_map[y_][x_]== NULL && (utility>utility_max || (utility==utility_max&& dist>d))) {
+          utility_max = utility;
+          dist = d;
+          ny = y_;
+          nx = x_;
+        }
+      }
+    }
+
+    sim->agents_map[y][x] = NULL;
+    sim->agents_map[ny][nx] = agent;
+    agent->x = nx;
+    agent->y = ny;
+
+    collected_sugar = sim->sugar_lvl[ny][nx];
+    collected_spice = sim->spice_lvl[ny][nx];
+
+    agent->sugar += collected_sugar;
+    agent->spice += collected_spice;
+
+    sim->sugar_lvl[ny][nx] = 0;
+    sim->spice_lvl[ny][nx] = 0;
+  }
+
+}
+
+// 砂糖 + 汚染
+/*
 void rule_M(Simulation *sim, float alpha) {
   Agent *agent;
   int dist;
@@ -147,10 +219,8 @@ void rule_M(Simulation *sim, float alpha) {
 
     for (int i=0; i<4; i++) {
       for (int d=0; d<=agent->vision; d++) {
-        /*
-        x_ = (x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0]+sim->width)%sim->width;
-        y_ = (y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1]+sim->height)%sim->height;
-        */
+        // x_ = (x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0]+sim->width)%sim->width;
+        // y_ = (y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1]+sim->height)%sim->height;
         x_ = x+d*SCAN_DIRECTIONS[directions_n_arr[i]][0];
         y_ = y+d*SCAN_DIRECTIONS[directions_n_arr[i]][1];
         if (x_ < 0) { x_ = 0; }
@@ -184,12 +254,13 @@ void rule_M(Simulation *sim, float alpha) {
     sim->sugar_lvl[ny][nx] = 0;
   }
 }
+*/
 
 void rule_S(Simulation *sim) {
   int dir_n_arr[4] = {0, 1, 2, 3};
   Agent *neighbor;
   Agent *child;
-  int vision, metabolism;
+  int vision, sugar_metabolism, spice_metabolism;
   int empty_sites[6];
   int empty_site_n;
   int x_, y_;
@@ -250,12 +321,16 @@ void rule_S(Simulation *sim) {
       agent->sugar -= agent->endowment_sugar/2;
       neighbor->sugar -= neighbor->endowment_sugar/2;
       vision = rand()<0.5 ? agent->vision : neighbor->vision;
-      metabolism = rand()<0.5 ? agent->metabolism : neighbor->metabolism;
+      sugar_metabolism = rand()<0.5 ? agent->sugar_metabolism : neighbor->sugar_metabolism;
+      spice_metabolism = rand()<0.5 ? agent->spice_metabolism : neighbor->spice_metabolism;
 
       shuffle(empty_sites, empty_site_n);
       child_x = empty_sites[0]%w;
       child_y = empty_sites[0]/w;
-      initialize_agent(sim, child, child_x, child_y, vision, metabolism, agent->endowment_sugar/2+neighbor->endowment_sugar/2);
+      initialize_agent(
+          sim, child, child_x, child_y, vision, sugar_metabolism, spice_metabolism,
+          agent->endowment_sugar/2+neighbor->endowment_sugar/2, agent->endowment_spice/2+neighbor->endowment_spice/2
+        );
     }
   }
 }

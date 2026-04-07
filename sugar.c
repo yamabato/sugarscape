@@ -17,11 +17,17 @@ void initialize(Simulation *sim) {
 
   sim->sugar_lvl = (int **)malloc(sizeof(int *)*sim->height);
   sim->sugar_cap = (int **)malloc(sizeof(int *)*sim->height);
+  sim->spice_lvl = (int **)malloc(sizeof(int *)*sim->height);
+  sim->spice_cap = (int **)malloc(sizeof(int *)*sim->height);
+
   sim->pollution_lvl = (float **)malloc(sizeof(float *)*sim->height);
   sim->agents_map = (Agent ***)malloc(sizeof(int *)*sim->height);
   for (int i=0; i<HEIGHT; i++) {
     sim->sugar_lvl[i] = (int *)malloc(sizeof(int)*sim->width);
     sim->sugar_cap[i] = (int *)malloc(sizeof(int)*sim->width);
+    sim->spice_lvl[i] = (int *)malloc(sizeof(int)*sim->width);
+    sim->spice_cap[i] = (int *)malloc(sizeof(int)*sim->width);
+
     sim->pollution_lvl[i] = (float *)calloc(sim->width, sizeof(float));
     sim->agents_map[i] = (Agent **)calloc(sim->width, sizeof(Agent *));
   }
@@ -30,6 +36,9 @@ void initialize(Simulation *sim) {
     for (int j=0; j<sim->width; j++) {
       sim->sugar_lvl[i][j] = SUGAR_CAP_SETTING4[i][j];
       sim->sugar_cap[i][j] = SUGAR_CAP_SETTING4[i][j];
+  
+      sim->spice_lvl[i][j] = SUGAR_CAP_SETTING4[i][sim->width-j-1];
+      sim->spice_cap[i][j] = SUGAR_CAP_SETTING4[i][sim->width-j-1];
     }
   }
 
@@ -45,7 +54,7 @@ void initialize(Simulation *sim) {
   for (int i=0; i<INIT_AGENTS; i++) {
     agent = sim->unused_agents;
     sim->unused_agents = agent->next;
-    initialize_agent(sim, agent, -1, -1, -1, -1, -1);
+    initialize_agent(sim, agent, -1, -1, -1, -1, -1, -1, -1);
   }
 }
 
@@ -70,14 +79,16 @@ int main(void) {
 
   int n;
   show_agents(&sim);
-  for (int i=0; i<1000; i++) {
+  for (int i=0; i<500; i++) {
     update(&sim);
 
-    if (i%100== 0) {
+    if (i%1== 0) {
       n = 0;
       for (Agent *agent=sim.agents; agent!=NULL; agent=agent->next) {
         n++;
       }
+      printf("%d\n", n);
+      continue;
 
       printf("\n");
       printf("step: %d\n", i+1);
