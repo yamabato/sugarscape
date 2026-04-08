@@ -56,7 +56,7 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   } else {
     agent->sugar = endowment_sugar;
   }
-  agent->endowment_spice = agent->spice;
+  agent->endowment_sugar = agent->sugar;
 
   if (endowment_spice == -1) {
     agent->spice = uniform_dist_rand(MIN_INIT_SPICE, MAX_INIT_SPICE);

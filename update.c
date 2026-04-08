@@ -46,7 +46,7 @@ void update(Simulation *sim) {
     next_agent = agent->next;
 
     consumed_sugar = min(agent->sugar_metabolism, agent->sugar);
-    consumed_spice = min(agent->sugar_metabolism, agent->spice);
+    consumed_spice = min(agent->spice_metabolism, agent->spice);
     if (sim->pollute) {
       sim->pollution_lvl[y][x] += consumed_sugar*rule_m_beta;
       sim->pollution_lvl[y][x] += consumed_spice*rule_m_beta;

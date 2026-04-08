@@ -9,7 +9,7 @@ static int MIN_SPICE_METABOLISM = 1;
 static int MAX_SPICE_METABOLISM = 4;
 
 static int MIN_VISION = 1;
-static int MAX_VISION = 6;
+static int MAX_VISION = 10;
 
 static int MIN_INIT_SUGAR = 50;
 static int MAX_INIT_SUGAR = 100;
