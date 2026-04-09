@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <limits.h>
 #include <math.h>
 
@@ -30,6 +31,8 @@ void update(Simulation *sim) {
 
   rule_M(sim, rule_m_alpha);
   rule_G(sim, rule_g_alpha);
+
+  rule_T(sim);
 
   /*
   if (sim->time >= 100) {
@@ -278,6 +281,7 @@ void rule_S(Simulation *sim) {
   for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
     if (!agent->is_fertile) { continue; }
     if (agent->sugar < agent->endowment_sugar) { continue; }
+    if (agent->spice < agent->endowment_spice) { continue; }
     // 近傍のエージェントをランダムに選ぶ
     // 生殖可能なら，子エージェントを配置
 
@@ -286,7 +290,7 @@ void rule_S(Simulation *sim) {
       x_ = (agent->x+SCAN_DIRECTIONS[dir_n_arr[i]][1]+w)%w;
       y_ = (agent->y+SCAN_DIRECTIONS[dir_n_arr[i]][0]+h)%h;
       neighbor = sim->agents_map[y_][x_];
-      if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar) { continue; }
+      if (neighbor==NULL || !neighbor->is_fertile || neighbor->sugar<neighbor->endowment_sugar || neighbor->spice<neighbor->endowment_spice) { continue; }
       if (agent->sex == neighbor->sex) { continue; }
 
       if (sim->unused_agents == NULL) {
@@ -320,6 +324,8 @@ void rule_S(Simulation *sim) {
 
       agent->sugar -= agent->endowment_sugar/2;
       neighbor->sugar -= neighbor->endowment_sugar/2;
+      agent->spice -= agent->endowment_spice/2;
+      neighbor->spice -= neighbor->endowment_spice/2;
       vision = rand()<0.5 ? agent->vision : neighbor->vision;
       sugar_metabolism = rand()<0.5 ? agent->sugar_metabolism : neighbor->sugar_metabolism;
       spice_metabolism = rand()<0.5 ? agent->spice_metabolism : neighbor->spice_metabolism;
@@ -331,6 +337,86 @@ void rule_S(Simulation *sim) {
           sim, child, child_x, child_y, vision, sugar_metabolism, spice_metabolism,
           agent->endowment_sugar/2+neighbor->endowment_sugar/2, agent->endowment_spice/2+neighbor->endowment_spice/2
         );
+    }
+  }
+}
+
+void rule_T(Simulation *sim) {
+  float sugar, spice;
+  float sugar_a, spice_a;
+  float sugar_b, spice_b;
+  int sugar_metabolism, spice_metabolism;
+  float price; // sugarで計ったspiceの価格
+  float ua, ub;
+  float ua_prev, ub_prev;
+  float d_sugar, d_spice;
+  float mrs_a, mrs_b;
+  int x_, y_;
+  Agent *neighbor;
+
+  int w, h;
+  w = sim->width;
+  h = sim->height;
+
+  // MRS(限界代替率)を計算
+  for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
+    sugar = agent->sugar;
+    spice = agent->spice;
+    sugar_metabolism = agent->sugar_metabolism;
+    spice_metabolism = agent->spice_metabolism;
+
+    agent->mrs = (spice/spice_metabolism)/(sugar/sugar_metabolism); 
+  }
+
+  for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
+    if (agent->mrs == 0) { continue; }
+    for (int i=0; i<4; i++) {
+      x_ = (agent->x+SCAN_DIRECTIONS[i][1]+w)%w;
+      y_ = (agent->y+SCAN_DIRECTIONS[i][0]+h)%h;
+
+      neighbor = sim->agents_map[y_][x_];
+      if (neighbor == NULL) { continue; }
+      if (neighbor->mrs == 0) { continue; }
+
+      while (true) {
+        if (neighbor->mrs == agent->mrs) { break; }
+
+        price = sqrt(agent->mrs * neighbor->mrs);
+
+        ua_prev = agent_utility_function(agent->sugar, agent->spice, agent->sugar_metabolism, agent->spice_metabolism);
+        ub_prev = agent_utility_function(neighbor->sugar, neighbor->spice, neighbor->sugar_metabolism, neighbor->spice_metabolism);
+
+        if (price > 1) { d_sugar = 1; d_spice = price; }
+        else { d_sugar = 1/price; d_spice = 1; }
+
+        if (agent->mrs > neighbor->mrs) {
+          sugar_a = agent->sugar + d_sugar;
+          spice_a = agent->spice - d_spice;
+          sugar_b = neighbor->sugar - d_sugar;
+          spice_b = neighbor->spice + d_spice;
+        } else {
+          sugar_a = agent->sugar - d_sugar;
+          spice_a = agent->spice + d_spice;
+          sugar_b = neighbor->sugar + d_sugar;
+          spice_b = neighbor->spice - d_spice;
+        }
+
+        ua = agent_utility_function(sugar_a, spice_a, agent->sugar_metabolism, agent->spice_metabolism);
+        ub = agent_utility_function(sugar_b, spice_b, neighbor->sugar_metabolism, neighbor->spice_metabolism);
+
+        mrs_a = ((spice_a)/agent->spice_metabolism)/((sugar_a)/agent->sugar_metabolism); 
+        mrs_b = ((spice_b)/neighbor->spice_metabolism)/((sugar_b)/neighbor->sugar_metabolism); 
+
+        if ((ua<=ua_prev||ub<=ub_prev) || (agent->mrs>neighbor->mrs&&mrs_a<mrs_b) || (agent->mrs<neighbor->mrs&&mrs_a>mrs_b)) { break; }
+
+        agent->sugar = sugar_a;
+        agent->spice = spice_a;
+        neighbor->sugar = sugar_b;
+        neighbor->spice = spice_b;
+
+        agent->mrs = mrs_a;
+        neighbor->mrs = mrs_b;
+      }
     }
   }
 }

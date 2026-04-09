@@ -5,7 +5,7 @@
 #include "util.h"
 #include "sugar.h"
 
-void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, int sugar_metabolism, int spice_metabolism, int endowment_sugar, int endowment_spice) {
+void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, int sugar_metabolism, int spice_metabolism, float endowment_sugar, float endowment_spice) {
   int x_, y_;
 
   if (x==-1 || y==-1) {
@@ -52,14 +52,14 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   }
 
   if (endowment_sugar == -1) {
-    agent->sugar = uniform_dist_rand(MIN_INIT_SUGAR, MAX_INIT_SUGAR);
+    agent->sugar = (float)uniform_dist_rand(MIN_INIT_SUGAR, MAX_INIT_SUGAR);
   } else {
     agent->sugar = endowment_sugar;
   }
   agent->endowment_sugar = agent->sugar;
 
   if (endowment_spice == -1) {
-    agent->spice = uniform_dist_rand(MIN_INIT_SPICE, MAX_INIT_SPICE);
+    agent->spice = (float)uniform_dist_rand(MIN_INIT_SPICE, MAX_INIT_SPICE);
   } else {
     agent->spice = endowment_spice;
   }

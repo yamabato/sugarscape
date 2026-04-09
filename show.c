@@ -36,10 +36,10 @@ void show_agents(Simulation *sim) {
   for (int y=0; y<sim->height; y++) {
     for (int x=0; x<sim->width; x++) {
       if (sim->agents_map[y][x] != NULL) {
-        printf("%04d ", sim->agents_map[y][x]->sugar);
+        printf("%6.2f ", sim->agents_map[y][x]->sugar);
         // printf("%01d ", sim->agents_map[y][x]->vision);
       } else {
-        printf("---- ");
+        printf("------ ");
         // printf("- ");
       }
     }

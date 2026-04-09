@@ -34,19 +34,20 @@ typedef struct Agent {
   int vision;
   int sugar_metabolism;
   int spice_metabolism;
-  int sugar;
-  int spice;
+  float sugar;
+  float spice;
   int x;
   int y;
   int sex;
-  int endowment_sugar;
-  int endowment_spice;
+  float endowment_sugar;
+  float endowment_spice;
   int start_fertile_age;
   int end_fertile_age;
   bool is_fertile;
   int lifespan;
   struct Agent *prev;
   struct Agent *next;
+  float mrs;
 } Agent;
 
-float agent_utility_function(int, int, int, int);
+float agent_utility_function(float, float, int, int);

@@ -17,3 +17,4 @@ void rule_S_abg(Simulation *, int, int, int);
 
 void rule_M(Simulation *, float);
 void rule_S(Simulation *);
+void rule_T(Simulation *);

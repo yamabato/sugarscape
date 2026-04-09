@@ -79,20 +79,22 @@ int main(void) {
 
   int n;
   show_agents(&sim);
-  for (int i=0; i<100; i++) {
+
+  int N = 1000;
+  int step = 1000;
+  for (int i=0; i<N; i++) {
     update(&sim);
 
-    if (i%10== 0) {
+    if (i%step==0 || i==N-1) {
       n = 0;
       for (Agent *agent=sim.agents; agent!=NULL; agent=agent->next) {
         n++;
       }
-      printf("%d\n", n);
 
       printf("\n");
       printf("step: %d\n", i+1);
       printf("agents: %d\n", n);
-      show_agents(&sim);
+      // show_agents(&sim);
       // show_pollution(&sim);
     }
   }
