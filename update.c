@@ -1,3 +1,10 @@
+/*
+update.c
+2026/04/09
+2026/04/10 更新
+Haruta Kutsukawa
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -24,24 +31,15 @@ void update(Simulation *sim) {
 
   sim->time++;
 
-  /*
-  if (sim->time <50) { sim->pollute = false; }
-  else { sim->pollute = true; }
-  */
+  rule_M(sim, rule_m_alpha); // エージェントの移動
+  rule_G(sim, rule_g_alpha); // 資源回復
 
-  rule_M(sim, rule_m_alpha);
-  rule_G(sim, rule_g_alpha);
+  rule_T(sim); // エージェントの取引
 
-  rule_T(sim);
+  rule_S(sim); // エージェントの繁殖
 
-  /*
-  if (sim->time >= 100) {
-    rule_D(sim, rule_d_alpha);
-  }
-  */
-  // rule_S_abg(sim, 5, 25, 50);
-  rule_S(sim);
-
+  // エージェントが砂糖，スパイスを消費し
+  // 足りなくなった場合は死亡
   for (agent=sim->agents; agent!=NULL; agent=next_agent) {
     x = agent->x;
     y = agent->y;
@@ -57,7 +55,7 @@ void update(Simulation *sim) {
 
     agent->sugar -= agent->sugar_metabolism;
     agent->spice -= agent->spice_metabolism;
-    if (agent->sugar<0 || agent->spice<0 || agent->age>=agent->lifespan) {
+    if (agent->sugar<0 || agent->spice<0 || (!sim->inf_lifespan && agent->age>=agent->lifespan)) {
       if (agent->prev != NULL) {
         agent->prev->next = agent->next;
       }
@@ -77,6 +75,7 @@ void update(Simulation *sim) {
   }
 }
 
+// 資源回復
 void rule_G(Simulation *sim, int amount) {
   for (int y=0; y<sim->height; y++) {
     for (int x=0; x<sim->width; x++) {
@@ -86,6 +85,7 @@ void rule_G(Simulation *sim, int amount) {
   }
 }
 
+// 汚染物質の拡散
 void rule_D(Simulation *sim, int period) {
   if (sim->time%period != 0) { return; }
 
@@ -117,6 +117,7 @@ void rule_D(Simulation *sim, int period) {
   }
 }
 
+// 季節的な資源量の変動
 void rule_S_abg(Simulation *sim, int amount, int interval, int period) {
   // season: 0->上がsummer
   int season = ((sim->time-1)/period)%2;
@@ -131,7 +132,7 @@ void rule_S_abg(Simulation *sim, int amount, int interval, int period) {
   }
 }
 
-// 砂糖 + スパイス
+// 砂糖 + スパイスを考えるときのエージェントの移動
 void rule_M(Simulation *sim, float alpha) {
   Agent *agent;
   int dist;
@@ -195,7 +196,7 @@ void rule_M(Simulation *sim, float alpha) {
 
 }
 
-// 砂糖 + 汚染
+// 砂糖 + 汚染を考えるときのエージェントの移動
 /*
 void rule_M(Simulation *sim, float alpha) {
   Agent *agent;
@@ -259,6 +260,7 @@ void rule_M(Simulation *sim, float alpha) {
 }
 */
 
+// エージェントの繁殖
 void rule_S(Simulation *sim) {
   int dir_n_arr[4] = {0, 1, 2, 3};
   Agent *neighbor;
@@ -341,6 +343,7 @@ void rule_S(Simulation *sim) {
   }
 }
 
+// エージェントの取引
 void rule_T(Simulation *sim) {
   float sugar, spice;
   float sugar_a, spice_a;
@@ -357,6 +360,10 @@ void rule_T(Simulation *sim) {
   int w, h;
   w = sim->width;
   h = sim->height;
+
+  int n = 0;
+  float price_sum = 0, price_ave;
+  float deviation, ssd = 0; // 偏差平方和
 
   // MRS(限界代替率)を計算
   for (Agent *agent=sim->agents; agent!=NULL; agent=agent->next) {
@@ -416,7 +423,24 @@ void rule_T(Simulation *sim) {
 
         agent->mrs = mrs_a;
         neighbor->mrs = mrs_b;
+
+        if (sim->show_price) {
+          printf("price %d %f\n", sim->time, price);
+        }
+
+        trade_price_arr[n++] = price;
+        price_sum += price;
       }
     }
   }
+
+  price_ave = price_sum/n;
+
+  for (int i=0; i<n; i++) {
+    deviation = (trade_price_arr[i] - price_ave); 
+    ssd += deviation * deviation;
+  }
+
+  printf("pave %d %f\n", sim->time, price_ave);
+  printf("pstd %d %f\n", sim->time, sqrt(ssd/n));
 }

@@ -1,3 +1,9 @@
+/*
+initialize.c
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #include <stdlib.h>
 
 #include "initialize.h"
@@ -5,9 +11,11 @@
 #include "util.h"
 #include "sugar.h"
 
+// エージェントの初期化
 void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, int sugar_metabolism, int spice_metabolism, float endowment_sugar, float endowment_spice) {
   int x_, y_;
 
+  // 空いているますを選ぶ
   if (x==-1 || y==-1) {
     do {
       x_ = uniform_dist_rand(0, sim->width-1);
@@ -25,6 +33,8 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   }
 
   sim->agents_map[y_][x_] = agent;
+
+  // リストにつなぐ
   agent->next = sim->agents;
   if (sim->agents != NULL) { sim->agents->prev = agent; }
   agent->prev = NULL;
@@ -33,6 +43,7 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
   agent->x = x_;
   agent->y = y_;
 
+  // 砂糖，スパイス消費量の設定
   if (sugar_metabolism == -1) {
     agent->sugar_metabolism = uniform_dist_rand(MIN_SUGAR_METABOLISM, MAX_SUGAR_METABOLISM);
   } else {
@@ -51,6 +62,7 @@ void initialize_agent(Simulation *sim, Agent *agent, int x, int y, int vision, i
     agent->vision = vision;
   }
 
+  // 初期砂糖量，スパイス量の設定
   if (endowment_sugar == -1) {
     agent->sugar = (float)uniform_dist_rand(MIN_INIT_SUGAR, MAX_INIT_SUGAR);
   } else {

@@ -1,3 +1,9 @@
+/*
+setting.h
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #pragma once
 
 static int SUGAR_CAP_SETTING1[50][50] = {

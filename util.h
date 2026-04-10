@@ -1,3 +1,9 @@
+/*
+util.h
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #pragma once
 
 int uniform_dist_rand(int, int);

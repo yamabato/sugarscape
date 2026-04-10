@@ -1,3 +1,9 @@
+/*
+show.h
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #pragma once
 
 static float MAX_SUGAR_LVL = 50;

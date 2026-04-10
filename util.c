@@ -1,3 +1,9 @@
+/*
+util.c
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #include <stdlib.h>
 
 #include "util.h"

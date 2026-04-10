@@ -1,5 +1,13 @@
+/*
+sugar.c
+2026/04/09
+2026/04/10 更新
+Haruta Kutsukawa
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "agent.h"
@@ -9,7 +17,9 @@
 #include "show.h"
 #include "update.h"
 #include "initialize.h"
+#include "option.h"
 
+// シミュレーションの初期化
 void initialize(Simulation *sim) {
   Agent *agent;
 
@@ -58,7 +68,10 @@ void initialize(Simulation *sim) {
   }
 }
 
-int main(void) {
+int main(int argc, const char **argv) {
+  int N, step;
+  
+  // シミュレーションの初期化
   Simulation sim;
   sim.height = HEIGHT;
   sim.width = WIDTH;
@@ -68,34 +81,40 @@ int main(void) {
   sim.agents = NULL;
   sim.unused_agents = NULL;
   sim.agents_map = NULL;
-
   sim.pollute = false;
+  sim.show_price = false;
+  sim.inf_lifespan = false;
 
-  srand(123);
+  N = 50;
+  step = 1000;
+
+  parse_options(
+    argc, argv,
+    &sim,
+    &N, &step
+  );
+
+  srand(sim.seed);
 
   initialize(&sim);
 
-  show_sugarscape(&sim);
-
-  int n;
-  show_agents(&sim);
-
-  int N = 1000;
-  int step = 1000;
+  // 反復
   for (int i=0; i<N; i++) {
     update(&sim);
 
     if (i%step==0 || i==N-1) {
-      n = 0;
+      // 生存エージェントのカウント
       for (Agent *agent=sim.agents; agent!=NULL; agent=agent->next) {
-        n++;
+        /*
+        printf("sugar %d %f\n", sim.time, agent->sugar);
+        printf("spice %d %f\n", sim.time, agent->spice);
+        */
       }
 
-      printf("\n");
-      printf("step: %d\n", i+1);
-      printf("agents: %d\n", n);
+      // printf("\n");
+      // printf("step: %d\n", i+1);
+      // printf("agents: %d\n", n);
       // show_agents(&sim);
-      // show_pollution(&sim);
     }
   }
 

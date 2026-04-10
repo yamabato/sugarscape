@@ -1,3 +1,9 @@
+/*
+plot.c
+2026/04/09
+Haruta Kutsukawa
+*/
+
 #include <stdio.h>
 
 #include "plot.h"

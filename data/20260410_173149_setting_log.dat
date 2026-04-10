@@ -1,0 +1,9 @@
+N		= 1000
+SEED		= 1234
+S_STEP		= 0
+E_STEP		= 1000
+INF_LIFESPAN	= 1
+
+data: ./data/20260410_173149_sugarscape_output.dat
+ eps: ./img/20260410_173149_price.eps
+ pdf: ./img/20260410_173149_price.pdf

@@ -1,0 +1,9 @@
+data: ./data/20260410_162207_sugarscape_output.dat
+ eps: ./img/20260410_162207_price.eps
+ pdf: ./img/20260410_162207_price.pdf
+
+N = 1000
+SEED = 4321
+S_STEP = 0
+E_STEP = 1000
+INF_LIFESPAN = 1

@@ -1,0 +1,50 @@
+# 概要
+Joshua M. Epstein, and Robert L. Axtell,  "Growing Artificial Societies: Social Science from the Bottom Up," The MIT Press, 1996.の
+SugarScapeモデルの実装．
+エージェントは，砂糖とスパイスの2財を収集，消費，取引する．
+エージェントは視力，消費量等のパラメタを持つ．
+視力の範囲内で，最も自分にとって良い場所へ移動し，そこにある砂糖とスパイスを全て回収する．
+砂糖とスパイスは，各マスにおいて容量に達するまで，一定量ずつ回復する．
+エージェントは，砂糖とスパイスを誕生時に定められた量ずつ消費し，どちらかが切れれば死亡する．
+他に，定められた寿命に達した場合にも死亡する．
+
+取引においては，効用関数
+ u = (w2/m2) / (w1/m1)
+ (w1, m1: 砂糖の保有量，消費量)
+ (w2, m2: スパイスの保有量，消費量)
+を高めるように交換を行う．
+
+# 使い方
+
+## コンパイル
+make
+
+## 実行
+make run
+
+## オプション指定
+--N    ...     : 最大反復回数を指定
+--seed ...     : シード値を指定
+--show-price   : 全取引の価格を出力
+--inf-lifespan : エージェントの寿命を無効化
+
+## sugar.sh
+
+(現在のところ)取引の平均価格と標準偏差をプロットするスクリプト．
+./sugar.sh [seed]として，シード値を指定して実行．
+また，sugar.sh上部で実行時の設定を変更可能．
+
+実行すると，
+  ./data/[%Y%m%d_%H%M%S]_sugarscape_output.dat
+  ./data/[%Y%m%d_%H%M%S]_price_stats.dat
+  ./data/[%Y%m%d_%H%M%S]_setting_log.dat
+及び，
+  ./img/[%Y%m%d_%H%M%S]_price.eps
+  ./img/[%Y%m%d_%H%M%S]_price.pdf
+が作成される．
+
+_sugarscape_output.dataには./sugarの出力が，
+_price_stats.dataにはステップごとの取引価格平均と標準偏差が，
+_setting_log.dataには出力したファイル名と，実行時の設定が書き込まれる．
+
+_price.eps及び_price.pdfには，プロットした図が出力される．
